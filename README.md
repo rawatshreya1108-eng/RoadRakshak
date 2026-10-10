@@ -3,8 +3,7 @@ Spot it. Snap it. Fixed.
 
 ## Live Prototype
 [Open Roadrakshak
-Website] (https://rawatshreya1108-eng
-.github.io/RoadRakshak/)
+Website](https://rawatshreya1108-eng.github.io/RoadRakshak/)
 
 ## Project Presentation
 [View Project PPT](./
