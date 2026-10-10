@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RoadRakshak – Spot it. Snap it. Fixed.</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg1:#e6f4ff;--bg2:#f4fbe9;--card:#ffffffee;--tx:#1b2430;--mut:#5b6674;--ac:#1d6ff2;--bd:#d9e2ec}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg1:#0f1b2b;--bg2:#13261d;--card:#1a2433ee;--tx:#eaf0f7;--mut:#9fb0c3;--bd:#2b3a4f}}
+:root[data-theme="dark"]{--bg1:#0f1b2b;--bg2:#13261d;--card:#1a2433ee;--tx:#eaf0f7;--mut:#9fb0c3;--bd:#2b3a4f}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--tx);background:linear-gradient(var(--bg1),var(--bg2));min-height:100vh}
+.bg{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.bg span{position:absolute;opacity:.14;transform-origin:50% 100%;animation:sway 5s ease-in-out infinite}
+.bg .cl{top:6%;animation:drift 60s linear infinite;opacity:.35}
+@keyframes sway{50%{transform:rotate(4deg)}}@keyframes drift{from{transform:translateX(-20vw)}to{transform:translateX(120vw)}}
+header,main{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:12px 16px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.logo{font-size:26px;font-weight:800;letter-spacing:-.5px}.logo small{display:block;font-size:12px;font-weight:500;color:var(--mut);letter-spacing:0}
+.chip{background:var(--card);border:1px solid var(--bd);border-radius:99px;padding:6px 14px;font-weight:600}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px;backdrop-filter:blur(6px)}
+h3{margin:0 0 8px;font-size:16px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+.stat b{font-size:34px;display:block}.stat span{color:var(--mut);font-size:13px}
+.grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(290px,1fr);gap:14px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.mapw{position:relative;padding:0;overflow:hidden}
+svg{display:block;width:100%;height:auto}
+.road{stroke:#6c7280;stroke-width:15;stroke-linecap:round}.lane{stroke:#fff;stroke-width:1.5;stroke-dasharray:8 7;opacity:.7}
+.sw{transform-box:fill-box;transform-origin:50% 100%;animation:sway 4s ease-in-out infinite}
+.cloud{animation:drift 70s linear infinite}
+.mk{cursor:pointer}.mk:hover .sh{transform:scale(1.2)}.sh{transform-box:fill-box;transform-origin:center;transition:transform .15s}
+.pulse{fill:#e5383b;opacity:.35;transform-box:fill-box;transform-origin:center;animation:pl 1.6s ease-out infinite}
+@keyframes pl{to{transform:scale(2.4);opacity:0}}
+.me{fill:#1d6ff2;stroke:#fff;stroke-width:3}.mepl{fill:#1d6ff2;opacity:.3;transform-box:fill-box;transform-origin:center;animation:pl 2s infinite}
+.alt{fill:none;stroke:#8a94a6;stroke-width:4;stroke-dasharray:3 8;stroke-linecap:round}
+.rt{fill:none;stroke:#1d6ff2;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;transition:stroke-dashoffset 1.2s ease}
+.rt2{fill:none;stroke:#fff;stroke-width:2;stroke-dasharray:2 10;stroke-linecap:round;animation:flow 1s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-12}}
+.poi{cursor:pointer}.legend{position:absolute;left:10px;bottom:10px;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:6px 10px;font-size:12px;display:flex;gap:10px;flex-wrap:wrap}
+.tip{position:absolute;width:210px;z-index:5;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:8px;box-shadow:0 8px 24px #0003;display:none;font-size:13px;transform:translate(-50%,-100%)}
+.tip .im{height:96px;border-radius:10px;display:grid;place-items:center;font-size:46px;background-size:cover;background-position:center;position:relative}
+.tip .im i{position:absolute;bottom:4px;left:6px;font-size:10px;font-style:normal;background:#000a;color:#fff;padding:1px 6px;border-radius:99px}
+button,select,input{font:inherit;color:inherit}
+button{border:0;border-radius:10px;padding:8px 12px;background:var(--ac);color:#fff;font-weight:600;cursor:pointer}
+button.g{background:transparent;color:var(--tx);border:1px solid var(--bd)}button:disabled{opacity:.45;cursor:not-allowed}
+select,input[type=text]{width:100%;padding:8px;border-radius:10px;border:1px solid var(--bd);background:var(--card);margin:4px 0 8px}
+.row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.side{display:flex;flex-direction:column;gap:14px}
+.sm{font-size:12.5px;color:var(--mut)}.bar{height:10px;background:var(--bd);border-radius:9px;overflow:hidden}.bar div{height:100%;background:linear-gradient(90deg,#2a9d48,#8bd450);transition:width .6s}
+.cps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:10px}.cp{border:1px dashed var(--bd);border-radius:12px;padding:10px}.cp.lock{opacity:.55}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(120px);background:#1b2430;color:#fff;padding:10px 16px;border-radius:12px;z-index:30;transition:transform .3s;max-width:90vw}.toast.on{transform:translateX(-50%)}
+.ov{position:fixed;inset:0;background:#0b1a2ccc;display:none;place-items:center;z-index:20;padding:16px}.ov.on{display:grid}
+.spl{max-width:420px;width:100%;background:var(--card);backdrop-filter:blur(8px);border-radius:24px;padding:22px;text-align:center;animation:pop .5s}
+@keyframes pop{from{transform:scale(.8);opacity:0}}
+.scene{position:relative;height:110px;overflow:hidden;border-radius:16px;background:linear-gradient(#bfe3ff 60%,#6c7280 60%);margin-bottom:12px}
+.scene .e{position:absolute;font-size:44px;bottom:30px}.b1{animation:bn 1s ease-in-out infinite}.b2{animation:wg .6s ease-in-out infinite}.b3{animation:sp 3s linear infinite}
+.scene .car{position:absolute;bottom:4px;font-size:34px;animation:drv 4s linear infinite}
+@keyframes bn{50%{transform:translateY(-16px)}}@keyframes wg{50%{transform:rotate(14deg)}}@keyframes sp{to{transform:rotate(360deg)}}@keyframes drv{from{left:-15%}to{left:105%}}
+.scene button.e{background:transparent;border:0;padding:0;line-height:1;cursor:pointer}.spl h2{margin:6px 0 4px;font-size:22px}
+.cert{border:6px double #c9a227;background:#fffdf4;color:#3a2f06;padding:24px;border-radius:12px;max-width:520px;text-align:center}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.tabs{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 16px 8px;display:flex;gap:8px;overflow-x:auto}.tabs button{background:var(--card);color:var(--tx);border:1px solid var(--bd);white-space:nowrap}.tabs button.on{background:var(--ac);color:#fff}
+.qr{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--bd);border-radius:12px;margin:8px 0;cursor:pointer;background:var(--card)}.qr .em{font-size:30px}.bd{font-size:11px;color:#fff;border-radius:99px;padding:1px 8px;font-weight:700}.lk{background:transparent;color:var(--tx);border:1px solid var(--bd)}.lk.on{background:var(--ac);color:#fff}.al{background:#e5383b22;border:1px solid #e5383b;border-radius:10px;padding:8px;margin:6px 0;font-size:13px}.bs{height:12px;border-radius:6px;background:var(--bd);overflow:hidden;display:flex}
+@media print{body *{visibility:hidden}.cert,.cert *{visibility:visible}.cert{position:fixed;inset:20px}}
+</style></head><body>
+<div class="bg" aria-hidden="true"><span class="cl" style="font-size:70px">☁️</span><span class="cl" style="font-size:50px;top:14%;animation-delay:-30s">☁️</span>
+<span style="left:2%;bottom:-10px;font-size:130px">🌳</span><span style="left:20%;bottom:-8px;font-size:90px;animation-delay:-1s">🌿</span><span style="left:45%;bottom:-12px;font-size:110px;animation-delay:-2s">🌴</span><span style="left:70%;bottom:-8px;font-size:140px;animation-delay:-3s">🌳</span><span style="right:1%;bottom:-6px;font-size:100px;animation-delay:-.5s">🌲</span></div>
+
+<div class="ov on" id="splash" role="dialog" aria-modal="true" aria-label="Welcome"><div class="spl">
+<div class="scene" id="scene"></div><h2 id="slog"></h2><p class="sm" id="sub"></p><button id="go">Let's make roads safer 🚀</button></div></div>
+
+<header><div class="logo">🛡️ RoadRakshak<small>Spot it. Snap it. Fixed. · demo with sample data</small></div>
+</header><nav class="tabs" id="tabs" aria-label="Sections"><button data-tab="explore">🧭 Explore</button><button data-tab="report">📸 Report</button><button data-tab="queue">📋 Queue</button><button data-tab="stats">📊 Stats</button></nav>
+
+<main>
+<section class="stats tab" data-t="stats" aria-label="Dashboard">
+<div class="card stat"><b id="sSolved">0</b><span>✅ Solved (photo-verified)</span></div>
+<div class="card stat"><b id="sOpen">0</b><span>🚧 Unsolved</span></div>
+<div class="card stat"><b id="sRep">0</b><span>🔁 Repeated (fixed, then came back)</span></div>
+<div class="card stat"><b id="sConf">0</b><span>👍 Citizen confirmations</span></div><div class="card stat"><b id="sRate">0</b><span>📈 Fix rate</span></div><div class="card stat"><b id="sSev">0</b><span>🔺 Severe still open</span></div><div class="card" id="byType" style="grid-column:1/-1"></div></section>
+
+<div class="grid tab" data-t="explore report">
+<div class="card mapw"><svg id="map" viewBox="0 0 900 560" role="img" aria-label="Live hazard map"></svg>
+<div class="tip" id="tip"></div>
+<div class="legend"><span>🔺 Severe</span><span>🟧 Moderate</span><span>🟡 Minor</span><span>✅ Fixed</span><span>🔵 You</span></div></div>
+
+<div class="side">
+<div class="card tab" data-t="explore"><div class="row" style="justify-content:space-between;margin:0"><h3>🔔 Nearby danger alerts</h3><button class="g" id="alT">🔔 On</button></div><div id="alerts"></div><div class="sm">Alerts fire only for severe hazards, with sound or vibration, capped per trip.</div></div>
+<div class="card tab" data-t="explore"><h3>🔥 Worst cases near you</h3><div id="worst"></div></div>
+<div class="card tab" data-t="explore"><h3>🧭 Safest route</h3>
+<div class="sm">Tap a landmark or anywhere on the map to set your destination.</div>
+<select id="dest" aria-label="Destination"></select>
+<div class="row"><button id="mSafe">🛡️ Safest</button><button class="g" id="mFast">⚡ Shortest</button><button class="g" id="sim">▶ Simulate trip</button></div>
+<div id="rinfo" class="sm"></div></div>
+
+<div class="card tab" data-t="report"><h3>📸 Report a hazard in seconds</h3>
+<select id="type" aria-label="Hazard type"></select>
+<div class="row"><button class="g" id="pinB">📍 Tap map to drop pin</button><button class="g" id="gps">🎯 Use my location</button></div>
+<div class="row"><label class="g" style="border:1px solid var(--bd);border-radius:10px;padding:8px 12px;cursor:pointer">📷 Photo<input type="file" id="photo" accept="image/*" capture="environment" hidden></label><button class="g" id="voice">🎙️ Voice note</button></div>
+<div class="sm" id="rstat">Pin: not set · Photo: none</div>
+<button id="send" disabled style="margin-top:8px;width:100%">Send report</button>
+<div class="sm" style="margin-top:6px">Nearby duplicates auto-merge into “I see this too”. Photos would be face/plate-blurred.</div></div>
+</div></div>
+
+<section class="card tab" data-t="report" style="margin-top:14px"><div class="row" style="justify-content:space-between;align-items:center"><h3 style="margin:0">🎁 Rewards with local businesses</h3><span><span class="chip">⭐ <b id="pts">0</b> pts</span> <button class="g" id="certBtn">🏅 My certificate</button></span></div>
+<div class="sm">+10 pts per report (+5 with photo, +3 with voice) · +25 pts when your hazard is fixed &amp; verified by the crew's after-photo. Partners below are sample placeholders — they gain footfall, you gain perks.</div>
+<div class="bar" style="margin:10px 0 4px"><div id="pbar"></div></div><div class="sm" id="pnext"></div><div class="cps" id="cps"></div></section>
+<section class="card tab" data-t="queue"><h3>📋 Priority queue · severe → minor</h3><div class="sm">Ranked by severity, then by how many people agree. Tap 👍 if you see it too — it adds weight instead of a duplicate report.</div><div class="row" id="qf"></div><div id="qList"></div></section>
+</main>
+
+<div class="ov" id="certOv"><div><div class="cert" id="cert"></div><div class="row" style="justify-content:center"><button id="prt">🖨️ Print / Save</button><button class="g" style="background:#fff" id="cc">Close</button></div></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const $=s=>document.querySelector(s),RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+/* splash: new slogan + scene every load, no "next" button */
+const SL=[["Fill the pothole, not your insurance claim.","🕳️🚗😵"],["Manholes belong underground. Report the escapees!","🕳️🏃‍♂️💨"],["Dangling wires are not a hairstyle.","⚡💇‍♂️😱"],["Your footpath wants to be walked on, not tripped over.","🚶‍♀️🧱🤕"],["Puddles are for kids. Waterlogging is for the municipality.","🌧️🐸🚲"],["Superheroes wear capes. RoadRakshaks wear helmets.","🦸‍♂️⛑️🛵"],["One photo today, one safer street tomorrow.","📸🛣️✨"],["Potholes have no sense of humour. Report them.","🕳️🤡🛺"]];
+const s=SL[Math.floor(Math.random()*SL.length)],em=[...new Intl.Segmenter().segment(s[1])].map(x=>x.segment);
+$('#slog').textContent=s[0];$('#sub').textContent="Snap a hazard. Pin it. Watch it get fixed.";
+$('#scene').innerHTML=em.map((e,i)=>`<button class="e b${i+1}" data-h style="left:${12+i*30}%" aria-label="Tap to fix this hazard">${e}</button>`).join('')+'<span class="car">🚗</span>';
+const closeS=()=>{$('#splash').classList.remove('on')};$('#go').onclick=closeS;$('#splash').onclick=e=>{if(e.target.id=='splash')closeS()};addEventListener('keydown',e=>{if(e.key=='Escape'){closeS();$('#certOv').classList.remove('on')}});$('#go').focus();
+let fx=0;$('#sub').textContent='Tap the hazards to fix them 🛠️';
+$('#scene').onclick=e=>{const b=e.target.closest('[data-h]');if(!b||b.dataset.d)return;b.dataset.d=1;b.className='e';b.textContent='✅';b.style.animation='pop .4s';navigator.vibrate&&navigator.vibrate(40);if(++fx==em.length){$('#sub').textContent='🎉 Roads fixed! That is what we do for real.';$('#go').textContent='Enter RoadRakshak 🛡️';burst()}else $('#sub').textContent=`Fixed ${fx}/${em.length} — keep tapping!`};
+function burst(){const sc=$('#scene');for(let i=0;i<18;i++){const c=document.createElement('span');c.textContent=['🎉','✨','⭐','🛠️'][i%4];c.style.cssText='position:absolute;left:50%;top:50%;font-size:20px;transition:transform .9s,opacity .9s';sc.appendChild(c);requestAnimationFrame(()=>{c.style.transform=`translate(${(Math.random()-.5)*300}px,${(Math.random()-.5)*120}px)`;c.style.opacity=0});setTimeout(()=>c.remove(),1000)}}
+
+/* map data */
+const C=5,R=4,xs=[70,250,450,650,830],ys=[70,200,340,490],N=[],E=[];
+for(let r=0;r<R;r++)for(let c=0;c<C;c++)N.push({x:xs[c]+((r*7+c*13)%5-2)*8,y:ys[r]+((r*5+c*11)%5-2)*7});
+for(let r=0;r<R;r++)for(let c=0;c<C;c++){const i=r*C+c;if(c<C-1)E.push([i,i+1]);if(r<R-1)E.push([i,i+C])}
+const TY={manhole:['Open manhole','🕳️',3],wire:['Live wire','⚡',3],pothole:['Pothole','🚧',2],foot:['Broken footpath','🦶',2],water:['Waterlogging','🌊',2],light:['Dead streetlight','💡',1]};
+Object.entries(TY).forEach(([k,v])=>$('#type').insertAdjacentHTML('beforeend',`<option value="${k}">${v[1]} ${v[0]}</option>`));
+const H=[['manhole',11,12,.5,'open',14,'12 min'],['wire',12,13,.4,'open',9,'4 min'],['pothole',6,11,.5,'open',21,'1 h'],['foot',1,2,.5,'open',5,'3 h'],['water',7,12,.6,'open',17,'25 min'],['light',13,14,.5,'open',3,'1 d'],['pothole',5,10,.5,'open',11,'6 h',1],['water',8,13,.5,'open',6,'2 h',1],['manhole',2,3,.5,'fixed',8,'2 d'],['foot',16,17,.5,'fixed',4,'1 d'],['light',3,8,.5,'fixed',2,'3 d'],['wire',17,18,.5,'fixed',7,'5 h'],['pothole',0,1,.5,'fixed',9,'2 d'],['water',18,19,.5,'fixed',5,'8 h']].map(a=>({t:a[0],a:a[1],b:a[2],p:a[3],st:a[4],conf:a[5],age:a[6]+' ago',rep:!!a[7]}));
+const POI=[['School','🏫',3],['Hospital','🏥',14],['Market','🛒',16],['Metro','🚇',7]],SRC=10;
+let dest=14,mode='safe',sticky=-1,pinMode=false,pin=null,photoURL=null,voice=false,seed=7;
+const rnd=()=>(seed=seed*16807%2147483647)/2147483647,pos=h=>({x:N[h.a].x+(N[h.b].x-N[h.a].x)*h.p,y:N[h.a].y+(N[h.b].y-N[h.a].y)*h.p});
+function dseg(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy)));return{d:Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy),t}}
+
+/* static scenery */
+let g=`<rect width="900" height="560" fill="#cfe8c2"/><path d="M-10 272C200 230 350 305 520 264S800 240 920 282" fill="none" stroke="#7ec8e3" stroke-width="40"/><path d="M-10 272C200 230 350 305 520 264S800 240 920 282" fill="none" stroke="#bfe9f7" stroke-width="3" stroke-dasharray="6 14"/>`;
+for(let r=0;r<R-1;r++)for(let c=0;c<C-1;c++){if(r==1)continue;const a=N[r*C+c],b=N[r*C+c+1],d=N[(r+1)*C+c],x1=a.x+16,x2=b.x-16,y1=a.y+16,y2=d.y-16;
+ if((r==0&&c==1)||(r==2&&c==2)){g+=`<rect x="${x1}" y="${y1}" width="${x2-x1}" height="${y2-y1}" rx="18" fill="#9fd18b"/><text x="${(x1+x2)/2}" y="${(y1+y2)/2}" font-size="26" text-anchor="middle">⛲</text>`;continue}
+ for(let i=0;i<3;i++)for(let j=0;j<2;j++){const w=(x2-x1)/3-8,h=(y2-y1)/2-8;g+=`<rect x="${x1+i*(x2-x1)/3+4}" y="${y1+j*(y2-y1)/2+4}" width="${w}" height="${h*(.6+rnd()*.4)}" rx="3" fill="${['#e8d9c5','#d9c7b0','#f0e2d0','#cdbfae'][Math.floor(rnd()*4)]}" stroke="#0002"/>`}}
+for(let i=0;i<46;i++){const x=rnd()*880+10,y=rnd()*540+10,s=.7+rnd()*.8;g+=`<g transform="translate(${x} ${y}) scale(${s})" opacity=".55"><g class="sw" style="animation-delay:-${rnd()*4}s"><rect x="-2" y="0" width="4" height="12" fill="#7a5a3a"/><circle cy="-6" r="12" fill="#3f9d4a"/><circle cx="-7" cy="0" r="8" fill="#56b35a"/><circle cx="7" cy="0" r="8" fill="#56b35a"/></g></g>`}
+E.forEach(([a,b])=>g+=`<line class="road" x1="${N[a].x}" y1="${N[a].y}" x2="${N[b].x}" y2="${N[b].y}"/>`);
+E.forEach(([a,b])=>g+=`<line class="lane" x1="${N[a].x}" y1="${N[a].y}" x2="${N[b].x}" y2="${N[b].y}"/>`);
+if(!RM)for(let i=0;i<5;i++){const [a,b]=E[Math.floor(rnd()*E.length)];g+=`<circle r="5" fill="${['#ff6b6b','#ffd166','#4dabf7','#fff'][i%4]}" stroke="#0004"><animateMotion dur="${6+i*2}s" repeatCount="indefinite" path="M${N[a].x} ${N[a].y}L${N[b].x} ${N[b].y}L${N[a].x} ${N[a].y}"/></circle>`}
+g+=`<g class="cloud" opacity=".4" style="animation-duration:50s"><text y="40" font-size="46">☁️</text></g><g id="rt"></g><g id="poi"></g><g id="mk"></g><g id="me"></g>`;
+const svg=$('#map');svg.innerHTML=g;
+$('#poi').innerHTML=POI.map(p=>`<g class="poi" data-n="${p[2]}" transform="translate(${N[p[2]].x} ${N[p[2]].y-26})"><circle r="15" fill="#fff" stroke="#0003"/><text y="6" font-size="17" text-anchor="middle">${p[1]}</text></g>`).join('');
+$('#dest').innerHTML=POI.map(p=>`<option value="${p[2]}">${p[1]} ${p[0]}</option>`).join('')+'<option value="x">📍 Custom (tapped on map)</option>';
+$('#dest').value=14;
+
+/* markers */
+function pt(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse())}
+function marks(){$('#mk').innerHTML=H.map((h,i)=>{const p=pos(h),s=TY[h.t][2];let sh;
+ if(h.st=='fixed')sh=`<circle class="sh" r="11" fill="#2a9d48" stroke="#fff" stroke-width="2.5"/><text y="5" font-size="13" fill="#fff" text-anchor="middle">✓</text>`;
+ else sh=(s==3?`<circle class="pulse" r="12"/><polygon class="sh" points="0,-15 14,11 -14,11" fill="#e5383b" stroke="#fff" stroke-width="2.5"/>`:s==2?`<rect class="sh" x="-11" y="-11" width="22" height="22" rx="4" fill="#f48c06" stroke="#fff" stroke-width="2.5"/>`:`<circle class="sh" r="10" fill="#f2c200" stroke="#fff" stroke-width="2.5"/>`)+`<text y="${s==3?8:5}" font-size="11" text-anchor="middle">${TY[h.t][1]}</text>`;
+ return `<g class="mk" data-i="${i}" transform="translate(${p.x} ${p.y})" tabindex="0" role="button" aria-label="${TY[h.t][0]}">${sh}</g>`}).join('')}
+const tip=$('#tip');
+function showTip(i,st){const h=H[i],p=pos(h),k=svg.getBoundingClientRect().width/900,T=TY[h.t],sv=['','Minor','Moderate','Severe'][T[2]],bg=h.img?`background-image:url(${h.img})`:`background:linear-gradient(135deg,${h.st=='fixed'?'#b7e4c7,#74c69d':T[2]==3?'#ffccd5,#ff8fa3':'#ffe5b4,#ffc971'})`;
+ tip.innerHTML=`<div class="im" style="${bg}">${h.img?'':T[1]}<i>📸 ${h.st=='fixed'?'after-photo':'photo'} · ${h.age}</i></div><b>${T[0]}</b> ${h.rep?'🔁':''}<div class="sm">${h.st=='fixed'?'✅ Fixed & verified':sv+' · ⚠️ unsolved'} · 👍 ${h.conf}</div>`+(st?`<div class="row"><button data-act="see" data-i="${i}">👍 I see this too</button>${h.st=='open'?`<button class="g" data-act="fix" data-i="${i}">🛠️ Crew fix</button>`:''}<button class="g" data-act="x">✕</button></div>`:'');
+ tip.style.display='block';tip.style.left=Math.min(Math.max(p.x*k,110),svg.getBoundingClientRect().width-110)+'px';tip.style.top=Math.max(p.y*k-18,200)+'px'}
+const hideTip=()=>{tip.style.display='none';sticky=-1};
+svg.addEventListener('mouseover',e=>{const m=e.target.closest('.mk');if(m&&sticky<0)showTip(+m.dataset.i,false)});
+svg.addEventListener('mouseout',e=>{if(e.target.closest('.mk')&&sticky<0)hideTip()});
+svg.addEventListener('click',e=>{const m=e.target.closest('.mk'),po=e.target.closest('.poi');
+ if(m){sticky=+m.dataset.i;showTip(sticky,true);return}hideTip();
+ if(po){dest=+po.dataset.n;$('#dest').value=dest;return route()}
+ const q=pt(e);if(pinMode){let best={d:1e9};E.forEach(([a,b])=>{const r=dseg(q,N[a],N[b]);if(r.d<best.d)best={d:r.d,a,b,p:r.t}});setPin(best)}
+ else{let bi=0,bd=1e9;N.forEach((n,i)=>{const d=Math.hypot(n.x-q.x,n.y-q.y);if(d<bd){bd=d;bi=i}});dest=bi;$('#dest').value=POI.some(p=>p[2]==bi)?bi:'x';route()}});
+tip.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const i=+b.dataset.i,h=H[i];
+ if(b.dataset.act=='x')return hideTip();
+ if(b.dataset.act=='see'){if(h.seen)return toast('You already confirmed this one 👍');h.seen=1;h.conf++;addPts(2,'Thanks for confirming 👍');}
+ if(b.dataset.act=='fix'){h.st='fixed';h.age='just now';if(h.mine)addPts(25,'🎉 Your hazard was fixed & verified! Rewards are in the Report tab');else toast('Crew after-photo verified ✅')}
+ marks();stats();route();showTip(i,true)});
+
+/* routing */
+function path(s,d,safe){const pen=E.map(([a,b])=>H.reduce((t,h)=>t+(h.st=='open'&&dseg(pos(h),N[a],N[b]).d<24?TY[h.t][2]*TY[h.t][2]*90:0),0)),dist=Array(N.length).fill(1e9),prev=[],done=[];dist[s]=0;
+ for(;;){let u=-1;dist.forEach((v,i)=>{if(!done[i]&&(u<0||v<dist[u]))u=i});if(u<0||u==d)break;done[u]=1;
+  E.forEach(([a,b],k)=>{if(a!=u&&b!=u)return;const v=a==u?b:a,w=Math.hypot(N[a].x-N[b].x,N[a].y-N[b].y)+(safe?pen[k]:0);if(dist[u]+w<dist[v]){dist[v]=dist[u]+w;prev[v]=u}})}
+ const p=[d];while(p[0]!=s&&prev[p[0]]!==undefined)p.unshift(prev[p[0]]);return p}
+function info(p){let L=0,hz=new Set;for(let i=0;i<p.length-1;i++){const a=N[p[i]],b=N[p[i+1]];L+=Math.hypot(a.x-b.x,a.y-b.y);H.forEach((h,k)=>{if(h.st=='open'&&dseg(pos(h),a,b).d<24)hz.add(k)})}return{L:L*1.5,hz:[...hz]}}
+let curP=[];
+function route(){const sf=path(SRC,dest,true),ft=path(SRC,dest,false),a=info(sf),b=info(ft),P=mode=='safe'?sf:ft,O=mode=='safe'?ft:sf,pa=info(P),sv=x=>x.hz.filter(k=>TY[H[k].t][2]==3).length;curP=P;
+ const d=p=>'M'+p.map(i=>N[i].x+' '+N[i].y).join('L');
+ $('#rt').innerHTML=(sf.join()!=ft.join()?`<path class="alt" d="${d(O)}"/>`:'')+`<path class="rt" id="rp" d="${d(P)}"/><path class="rt2" d="${d(P)}"/>`;
+ const rp=$('#rp'),l=rp.getTotalLength();rp.style.strokeDasharray=l;rp.style.strokeDashoffset=RM?0:l;requestAnimationFrame(()=>requestAnimationFrame(()=>rp.style.strokeDashoffset=0));
+ $('#me').innerHTML=`<circle class="mepl" cx="${N[SRC].x}" cy="${N[SRC].y}" r="12"/><circle class="me" cx="${N[SRC].x}" cy="${N[SRC].y}" r="9"/><text x="${N[SRC].x}" y="${N[SRC].y+28}" text-anchor="middle" font-size="12" font-weight="700" fill="#1d6ff2" stroke="#fff" stroke-width="3" paint-order="stroke">You are here</text><text x="${N[dest].x}" y="${N[dest].y+7}" font-size="30" text-anchor="middle">🏁</text>`+(pin?`<text x="${pin.x}" y="${pin.y}" font-size="28" text-anchor="middle">📍</text>`:'');
+ $('#rinfo').innerHTML=`<b>${mode=='safe'?'🛡️ Safest':'⚡ Shortest'}:</b> ${Math.round(pa.L)} m · ~${Math.max(1,Math.round(pa.L/75))} min walk<br>⚠️ ${pa.hz.length} hazard(s) on this route (${sv(pa)} severe)`+(mode=='safe'&&b.hz.length>a.hz.length?`<br>✅ Dodges ${b.hz.length-a.hz.length} hazard(s) vs shortest, +${Math.round(a.L-b.L)} m`:'')+(mode=='fast'&&a.hz.length<b.hz.length?`<br>💡 Safest route avoids ${b.hz.length-a.hz.length} hazard(s)`:'')}
+$('#mSafe').onclick=()=>{mode='safe';$('#mSafe').className='';$('#mFast').className='g';route()};
+$('#mFast').onclick=()=>{mode='fast';$('#mFast').className='';$('#mSafe').className='g';route()};
+$('#dest').onchange=e=>{if(e.target.value!='x'){dest=+e.target.value;route()}};
+$('#sim').onclick=()=>{const rp=$('#rp'),l=rp.getTotalLength(),dot=document.createElementNS('http://www.w3.org/2000/svg','circle'),al=new Set;dot.setAttribute('r',7);dot.setAttribute('fill','#ff7a00');dot.setAttribute('stroke','#fff');dot.setAttribute('stroke-width',2.5);$('#me').appendChild(dot);let t0=null;
+ const st=ts=>{t0??=ts;const d=Math.min((ts-t0)/1000*110,l),p=rp.getPointAtLength(d);dot.setAttribute('cx',p.x);dot.setAttribute('cy',p.y);
+  H.forEach((h,k)=>{const q=pos(h);if(h.st=='open'&&TY[h.t][2]>=2&&!al.has(k)&&Math.hypot(q.x-p.x,q.y-p.y)<55){al.add(k);navigator.vibrate&&navigator.vibrate(200);toast(`🔊 ${TY[h.t][0]} ahead in ~${Math.round(Math.hypot(q.x-p.x,q.y-p.y)*1.5)} m — slow down`)}});
+  if(d<l)requestAnimationFrame(st);else{toast('🏁 You have arrived');setTimeout(()=>dot.remove(),1500)}};requestAnimationFrame(st)};
+
+/* reporting */
+function setPin(p){pin=p;const q=pos({a:p.a,b:p.b,p:p.p});pin.x=q.x;pin.y=q.y;pinMode=false;svg.style.cursor='';rs();route()}
+const rs=()=>{$('#rstat').textContent=`Pin: ${pin?'set ✓':'not set'} · Photo: ${photoURL?'added ✓':'none'} · Voice: ${voice?'added ✓ (demo)':'none'}`;$('#send').disabled=!pin};
+$('#pinB').onclick=()=>{pinMode=true;svg.style.cursor='crosshair';toast('Tap a road on the map to drop your pin')};
+$('#gps').onclick=()=>setPin({a:10,b:11,p:.2});
+$('#voice').onclick=()=>{voice=!voice;rs()};
+$('#photo').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader;r.onload=()=>{photoURL=r.result;rs()};r.readAsDataURL(f)};
+$('#send').onclick=()=>{const t=$('#type').value,q=pos(pin),dup=H.findIndex(h=>h.t==t&&h.st=='open'&&Math.hypot(pos(h).x-q.x,pos(h).y-q.y)<34);
+ if(dup>=0){H[dup].conf++;addPts(2,'Already reported nearby — merged as “I see this too” (+2 pts)')}
+ else{H.push({t,a:pin.a,b:pin.b,p:pin.p,st:'open',conf:1,age:'just now',mine:true,img:photoURL});addPts(10+(photoURL?5:0)+(voice?3:0),'📨 Sent to the ward queue! Points added — fix pays +25 more')}
+ pin=null;photoURL=null;voice=false;$('#photo').value='';rs();marks();stats();route()};
+
+/* dashboard + rewards */
+function stats(){const v=[H.filter(h=>h.st=='fixed').length,H.filter(h=>h.st=='open').length,H.filter(h=>h.rep).length,H.reduce((a,h)=>a+h.conf,0)];['sSolved','sOpen','sRep','sConf'].forEach((id,i)=>$('#'+id).textContent=v[i]);$('#sRate').textContent=Math.round(v[0]/H.length*100)+'%';$('#sSev').textContent=H.filter(h=>h.st=='open'&&TY[h.t][2]==3).length;const mx=Math.max(...Object.keys(TY).map(k=>H.filter(h=>h.t==k).length));$('#byType').innerHTML='<h3>Cases by type</h3>'+Object.keys(TY).map(k=>{const o=H.filter(h=>h.t==k&&h.st=='open').length,f=H.filter(h=>h.t==k&&h.st=='fixed').length;return `<div class="row" style="align-items:center;flex-wrap:nowrap"><span style="width:150px">${TY[k][1]} ${TY[k][0]}</span><div class="bs" style="flex:1"><div style="width:${f/mx*100}%;background:#2a9d48"></div><div style="width:${o/mx*100}%;background:${sevC[TY[k][2]]}"></div></div><span class="sm" style="width:100px">${o} open · ${f} fixed</span></div>`}).join('')+'<div class="sm">Green = fixed &amp; photo-verified · colour = still open by severity</div>'}
+let pts=35;try{pts=+localStorage.getItem('rr')||35}catch(e){}
+const CP=[[50,'☕','Free chai','Namma Chai Corner'],[100,'🥐','10% off bakery bill','Shree Bakery'],[200,'🚲','Free tyre check','Metro Cycles']];
+function rewards(){$('#pts').textContent=pts;const nx=CP.find(c=>c[0]>pts),pv=[...CP].reverse().find(c=>c[0]<=pts);$('#pbar').style.width=(nx?(pts-(pv?pv[0]:0))/(nx[0]-(pv?pv[0]:0))*100:100)+'%';
+ $('#pnext').textContent=nx?`${nx[0]-pts} pts to unlock “${nx[2]}”`:'All rewards unlocked — you are a legend! 🏆';
+ $('#cps').innerHTML=CP.map(c=>`<div class="cp ${pts<c[0]?'lock':''}"><div style="font-size:28px">${c[1]}</div><b>${c[2]}</b><div class="sm">${c[3]} · ${c[0]} pts</div>${pts>=c[0]?`<button style="margin-top:6px" onclick="this.outerHTML='<b>Code: RR-'+(${c[0]}*37+${pts}).toString(36).toUpperCase()+'</b>'">Claim coupon</button>`:'<div class="sm">🔒 Locked</div>'}</div>`).join('')}
+function addPts(n,m){pts+=n;try{localStorage.setItem('rr',pts)}catch(e){}rewards();toast(m)}
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),3200)}
+$('#certBtn').onclick=()=>{const tier=pts>=300?['Gold','🥇']:pts>=150?['Silver','🥈']:pts>=50?['Bronze','🥉']:null;
+ $('#cert').innerHTML=tier?`<div style="font-size:48px">${tier[1]}</div><h2 style="margin:4px">Certificate of Civic Courage</h2><p>This ${tier[0]} <b>Road Guardian</b> certificate is awarded to</p><input type="text" id="nm" placeholder="Type your name" style="text-align:center;font-size:20px;background:#fff;color:#000"><p>for reporting road hazards and keeping their neighbourhood safe.<br><b>${pts} points</b> · RoadRakshak · ${new Date().toLocaleDateString()}</p>`:`<div style="font-size:48px">🔒</div><h3>Reach 50 points to earn your first certificate</h3><p>You have ${pts}. Report a hazard to get there!</p>`;$('#certOv').classList.add('on')};
+$('#cc').onclick=()=>$('#certOv').classList.remove('on');$('#prt').onclick=()=>{try{print()}catch(e){toast('Take a screenshot to share it!')}};
+const sevN=['','Minor','Moderate','Severe'],sevC=['','#f2c200','#f48c06','#e5383b'],dm=h=>{const q=pos(h);return Math.round(Math.hypot(q.x-N[SRC].x,q.y-N[SRC].y)*1.5)};
+let alertsOn=true,qf='open',cur='x';
+const row=(x,d)=>{const h=x.h,T=TY[h.t];return `<div class="qr" data-i="${x.i}"><span class="em">${h.st=='fixed'?'✅':T[1]}</span><div style="flex:1"><b>${T[0]}</b> ${h.rep?'🔁':''}${h.mine?' ⭐':''}<div class="sm"><span class="bd" style="background:${h.st=='fixed'?'#2a9d48':sevC[T[2]]}">${h.st=='fixed'?'Fixed':sevN[T[2]]}</span> ${d?x.d+' m away · ':''}${h.age}</div></div><button class="lk ${h.seen?'on':''}" data-lk="${x.i}" aria-label="I agree with this report">👍 ${h.conf}</button></div>`};
+const all=()=>H.map((h,i)=>({h,i,d:dm(h)}));
+function renderExplore(){const o=all().filter(x=>x.h.st=='open'),al=o.filter(x=>TY[x.h.t][2]==3&&x.d<500).sort((a,b)=>a.d-b.d).slice(0,3),w=o.filter(x=>x.d<900).sort((a,b)=>TY[b.h.t][2]-TY[a.h.t][2]||b.h.conf-a.h.conf).slice(0,4);
+ $('#alerts').innerHTML=alertsOn?(al.length?al.map(x=>`<div class="al">🔔 <b>${TY[x.h.t][1]} ${TY[x.h.t][0]}</b> · ${x.d} m away — take care</div>`).join(''):'<div class="sm">✅ No severe hazards within 500 m.</div>'):'<div class="sm">Alerts are off.</div>';
+ $('#worst').innerHTML=w.length?w.map(x=>row(x,1)).join(''):'<div class="sm">All clear nearby 🎉</div>';
+ if(0){toast(`🔔 ${TY[al[0].h.t][0]} ${al[0].d} m from you`)}}
+function renderQ(){$('#qf').innerHTML=[['open','All open'],['3','🔺 Severe'],['2','🟧 Moderate'],['1','🟡 Minor'],['fx','✅ Fixed']].map(f=>`<button class="${qf==f[0]?'':'g'}" data-f="${f[0]}">${f[1]}</button>`).join('');
+ const l=all().filter(x=>qf=='fx'?x.h.st=='fixed':x.h.st=='open'&&(qf=='open'||TY[x.h.t][2]==qf)).sort((a,b)=>TY[b.h.t][2]-TY[a.h.t][2]||b.h.conf-a.h.conf);$('#qList').innerHTML=l.length?l.map(x=>row(x,0)).join(''):'<div class="sm">Nothing here 🎉</div>'}
+function tab(n){document.querySelectorAll('.tab').forEach(e=>e.style.display=e.dataset.t.split(' ').includes(n)?'':'none');document.querySelectorAll('#tabs button').forEach(b=>b.className=b.dataset.tab==n?'on':'');hideTip();const m=x=>x=='explore'||x=='report';if(m(n)&&!m(cur))route();cur=n;if(n=='explore')renderExplore();if(n=='queue')renderQ();if(n=='stats')stats();scrollTo(0,0)}
+document.addEventListener('click',e=>{const t=e.target.closest('#tabs button'),f=e.target.closest('[data-f]'),l=e.target.closest('[data-lk]'),r=e.target.closest('.qr');
+ if(t)return tab(t.dataset.tab);if(f){qf=f.dataset.f;return renderQ()}
+ if(l){const h=H[+l.dataset.lk];h.seen?(h.conf--,h.seen=0):(h.conf++,h.seen=1);renderQ();renderExplore();stats();return}
+ if(r){const i=+r.dataset.i;if(cur!='explore')tab('explore');sticky=i;showTip(i,true);svg.scrollIntoView({behavior:'smooth',block:'center'})}});
+$('#alT').onclick=()=>{alertsOn=!alertsOn;$('#alT').textContent=alertsOn?'🔔 On':'🔕 Off';renderExplore()};
+marks();stats();rewards();route();tab('explore');
+</script></body></html>
